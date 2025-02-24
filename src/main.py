@@ -4,7 +4,7 @@ import pathlib
 import logging
 import logging.config
 import logging.handlers
-
+import streamlit as st
 
 def setup_logging():
 
@@ -16,6 +16,12 @@ def setup_logging():
 
 def main():
     setup_logging()
+    routes = [
+        "./pages/home.py",
+        "./pages/test.py"
+    ]
+    pg = st.navigation([st.Page(route) for route in routes])
+    pg.run()
 
 
 if __name__ == '__main__':
