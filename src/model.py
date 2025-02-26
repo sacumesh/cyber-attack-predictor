@@ -1,17 +1,20 @@
 import dataclasses
-import typing
+from typing import Optional
 from enum import Enum
+
 
 # Define an Enum for Attack Types
 class AttackType(Enum):
-    DDoS = "DDoS"
-    Malware = "Malware"
-    Intrusion = "Intrusion"
+    DDOS = "DDoS"
+    MALWARE = "Malware"
+    INTRUSION = "Intrusion"
+
 
 class TrafficType(Enum):
     HTTP = "HTTP"
     FTP = "FTP"
     DNS = "DNS"
+
 
 class Protocol(Enum):
     TCP = "TCP"
@@ -19,14 +22,75 @@ class Protocol(Enum):
     ICMP = "ICMP"
 
 
-class ActionTaken(Enum):
-    BLOCKED = "BlOCKED"
+class PacketType(Enum):
+    CONTROL = "Control"
+    DATA = "Data"
 
+
+class AttackSignature(Enum):
+    PATTERN_A = "Known Pattern A"
+    PATTERN_B = "Known Pattern B"
+
+
+class ActionTaken(Enum):
+    BLOCKED = "Blocked"
+    IGNORED = "Ignored"
+    LOGGED = "Logged"
+
+
+class ServiertyLevel(Enum):
+    HIGH = "High"
+    LOW = "Low"
+    MEDIUM = "Medium"
+
+
+class NetworkSegment(Enum):
+    SEGMENT_A = "Segment A"
+    SEGMENT_B = "Segment B"
+    SEGMENT_C = "Segment C"
+
+
+class LogSource(Enum):
+    SERVER = "Server"
+    FIREWALL = "Firewall"
+
+
+class OperatingSystem(Enum):
+    WINDOWS = "Windows"
+    LINUX = "Linux"
+    MAC_OS_X = "Mac OS X"
+    ANDROID = "Android"
+    IOS = "iOS"
+
+
+class Browser(Enum):
+    OPERA = "Opera"
+    INTERNET_EXPLORER = "IE"
+    CHROME = "Chrome"
+    SAFARI = "Safari"
+    FIREFOX = "Firefox"
+    MOBILE_SAFARI = "Mobile Safari"
+    FIREFOX_MOBILE = "Firefox Mobile"
+    CHROME_MOBILE_IOS = "Chrome Mobile iOS"
+    FIREFOX_IOS = "Firefox iOS"
+
+
+class Device(Enum):
+    PC = "PC"
+    MAC = "Mac"
+    GENERIC_SMARTPHONE = "Generic Smartphone"
+    IPOD = "iPod"
+    IPHONE = "iPhone"
+    IPAD = "iPad"
+    GENERIC_TABLET = "Generic Tablet"
+    LG_UG = "LG UG"
 
 
 @dataclasses.dataclass
 class NetworkLogEntry:
-    timestamp: str
+    Hour: int
+    Year: int
+    Month: int
     source_ip: str
     destination_ip: str
     source_port: int
@@ -36,17 +100,14 @@ class NetworkLogEntry:
     packet_type: str
     traffic_type: str
     payload_data: str
-    malware_indicators: typing.Optional[str] = None
-    anomaly_scores: typing.Optional[str] = None
-    alerts_warnings: typing.Optional[str] = None
-    attack_type: typing.Optional[str] = None
-    attack_signature: typing.Optional[str] = None
-    action_taken: typing.Optional[str] = None
-    severity_level: typing.Optional[str] = None
-    user_information: typing.Optional[str] = None
-    device_information: typing.Optional[str] = None
-    network_segment: typing.Optional[str] = None
-    geo_location_data: typing.Optional[str] = None
-    proxy_information: typing.Optional[str] = None
-    firewall_logs: typing.Optional[str] = None
-    ids_ips_alerts: typing.Optional[str] = None
+    severity_level: Optional[ServiertyLevel]
+    network_segment: Optional[NetworkSegment]
+    malware_indicators: Optional[str] = None
+    anomaly_scores: Optional[str] = None
+    alerts_warnings: Optional[str] = None
+    attack_type: Optional[str] = None
+    attack_signature: Optional[AttackSignature] = None
+    action_taken: Optional[ActionTaken] = None
+    proxy_information: Optional[str] = None
+    firewall_logs: Optional[str] = None
+    ids_ips_alerts: Optional[str] = None
