@@ -1,5 +1,6 @@
 import streamlit as st
 from model import Protocol, TrafficType, ActionTaken, AttackType, PacketType, AttackSignature, ServiertyLevel, OperatingSystem, Device, Browser, NetworkSegment, LogSource
+from src.service import get_device_list, get_os_list, get_browser_list
 import pandas as pd
 import datetime
 
@@ -52,11 +53,11 @@ with st.container(border=True):
     st.markdown("### 🖥️ **Device Information**")
     col5a, col6a = st.columns(2)
     with col5a:
-        operation_system = st.selectbox("Operating System", [o.value for o in OperatingSystem], index=0)
-        operation_system = st.selectbox("Device", [d.value for d in Device], index=0)
+        operation_system = st.selectbox("Operating System", get_os_list(), index=0)
+        operation_system = st.selectbox("Device", get_device_list(), index=0)
 
     with col6a:
-        operation_system = st.selectbox("Browser", [b.value for b in Browser], index=0)
+        browser = st.selectbox("Browser", get_browser_list(), index=0)
 
 
 with st.container(border=True):

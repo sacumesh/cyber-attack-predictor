@@ -1,4 +1,4 @@
-import config
+from src import config
 import json
 import pathlib
 import logging
