@@ -157,6 +157,13 @@ class NetworkFeatureExtractor(object):
         "High": 2
     }
 
+    ORD_ATTACK_TYPE_DICT = {
+    0: "DDoS",      
+    1: "Malware",  
+    2: "Intrusion"    
+    
+}
+
     MODEL_FEATURE_NAMES_IN = ['Packet Length', 'Anomaly Scores', 'Year', 'Month', 'Hour',
                               'DayOfWeek', 'Packet Type_Data', 'Traffic Type_FTP',
                               'Traffic Type_HTTP', 'Malware Indicators_No Detection',
@@ -236,6 +243,11 @@ class NetworkFeatureExtractor(object):
             return "Class E"
         else:
             return "Invalid IP Address"
+        
+    @classmethod
+    def label_attack_type(cls, value):
+        attack_type = cls.ORD_ATTACK_TYPE_DICT.get(value)
+        return attack_type
 
     @classmethod
     def categorize_port(cls, port: int):
