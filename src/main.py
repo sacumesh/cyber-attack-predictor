@@ -1,6 +1,6 @@
 import streamlit as st
 from model import Protocol, TrafficType, ActionTaken, AttackType, PacketType, AttackSignature, ServiertyLevel, NetworkSegment, LogSource, NetworkLogEntry, Device, OperatingSystem, Browser
-from service import predict
+from service import  predict_attack_type, is_valid_ip
 import datetime
 
 
@@ -15,6 +15,7 @@ def cyber_attack_dashboard():
             "Malware": "💻"
         }
 
+
         # Display the attack type with its emoji
         if attack_type in attack_emojis:
             attack_text = f"<h1 style='text-align: center; font-size: 40px;'>{attack_emojis[attack_type]} {attack_type}</h1>"
@@ -22,6 +23,12 @@ def cyber_attack_dashboard():
         else:
             unknown_attack_text = "<h1 style='text-align: center; font-size: 40px; color: red;'>⚠️ Unknown attack type. Please enter a valid attack type.</h1>"
             st.markdown(unknown_attack_text, unsafe_allow_html=True)
+
+
+    @st.dialog("❌")
+    def invalid_ip_dialog(msg):
+        st.markdown(msg)
+        
 
     st.title("🔐 **Cyber Attack Prediction**")
 
@@ -122,6 +129,15 @@ def cyber_attack_dashboard():
 
             if predict_btn:
 
+                if not is_valid_ip(source_ip):
+                    invalid_ip_dialog("⚠️ Invalid Source IP, The source IP address is invalid. Please enter a valid IP address (e.g., 192.168.1.1).")
+                    return
+
+                if not is_valid_ip(destination_ip):
+                    invalid_ip_dialog("⚠️ Invalid Destination IP, The destination IP address is invalid. Please enter a valid IP address (e.g., 192.168.1.2).")
+                    return  
+
+
                 network_entry = NetworkLogEntry(
                     # Date and Time Info
                     attack_date=attack_date,
@@ -159,7 +175,7 @@ def cyber_attack_dashboard():
                     proxy_information=proxy_information,
                     log_source=log_source,
                 )
-                attack_type = predict(network_entry)
+                attack_type =  predict_attack_type(network_entry)
                 display_attack_type(attack_type)
 
         with col6:

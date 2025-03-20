@@ -1,9 +1,8 @@
 import config
-import pandas as pd
 import joblib
 import logging
-import os
 from model import NetworkLogEntry, NetworkFeatureExtractor
+import ipaddress
 
 logger = logging.getLogger(__file__)
 
@@ -17,10 +16,16 @@ def load_preiction_model():
     except Exception as e:
         logger.error(e)
         raise e
-    
 
+def is_valid_ip(ip: str):
+    try:
+        ipaddress.IPv4Address(ip)
+        return True
+    except Exception as e:
+        logger.error(e)
+        return False
 
-def predict(network_log: NetworkLogEntry):
+def predict_attack_type(network_log: NetworkLogEntry):
     ntf_extractor = NetworkFeatureExtractor(network_log)
     model_features = ntf_extractor.extract()
     model = load_preiction_model()
