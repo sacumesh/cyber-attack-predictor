@@ -95,6 +95,7 @@ class OperatingSystem(Enum):
     IOS = "iOS"
     ANDROID = "Android"
 
+
 class Browser(Enum):
     CHROME = "Chrome"
     OPERA = "Opera"
@@ -143,7 +144,7 @@ class NetworkLogEntry:
     log_source: str
 
 
-class ABC(object):
+class NetworkFeatureExtractor(object):
     ANOMALY_SCORES_MEAN = 50.113473
     ANOMALY_SCORES_STD_DEV = 28.853598
 
@@ -157,62 +158,68 @@ class ABC(object):
     }
 
     MODEL_FEATURE_NAMES_IN = ['Packet Length', 'Anomaly Scores', 'Year', 'Month', 'Hour',
-       'DayOfWeek', 'Packet Type_Data', 'Traffic Type_FTP',
-       'Traffic Type_HTTP', 'Malware Indicators_No Detection',
-       'Alerts/Warnings_No Alert Triggered',
-       'Attack Signature_Known Pattern B', 'Action Taken_Ignored',
-       'Action Taken_Logged', 'Network Segment_Segment B',
-       'Network Segment_Segment C', 'IDS/IPS Alerts_No Alert Data',
-       'Log Source_Server', 'Source IP Class_Class B',
-       'Source IP Class_Class C', 'Destination IP Class_Class B',
-       'Destination IP Class_Class C', 'OS_Linux', 'OS_Mac OS',
-       'OS_Windows', 'OS_iOS', 'Source Port Category_UserPorts',
-       'Device_mobile', 'Device_tablet']
+                              'DayOfWeek', 'Packet Type_Data', 'Traffic Type_FTP',
+                              'Traffic Type_HTTP', 'Malware Indicators_No Detection',
+                              'Alerts/Warnings_No Alert Triggered',
+                              'Attack Signature_Known Pattern B', 'Action Taken_Ignored',
+                              'Action Taken_Logged', 'Network Segment_Segment B',
+                              'Network Segment_Segment C', 'IDS/IPS Alerts_No Alert Data',
+                              'Log Source_Server', 'Source IP Class_Class B',
+                              'Source IP Class_Class C', 'Destination IP Class_Class B',
+                              'Destination IP Class_Class C', 'OS_Linux', 'OS_Mac OS',
+                              'OS_Windows', 'OS_iOS', 'Source Port Category_UserPorts',
+                              'Device_mobile', 'Device_tablet']
 
     def __init__(self, network_log: NetworkLogEntry):
+        self.network_log = network_log
 
-        month = network_log.attack_date.month
-        year = network_log.attack_date.year
-        hour = network_log.attack_time.hour
-        day_of_week = network_log.attack_date.weekday()
+    def extract(self):
+        nt_log = self.network_log
 
-        data_dict = {
-            'Protocol': network_log.protocol,
-            'Packet Length': self.z_packet_length(network_log.packet_length),
-            'Packet Type': network_log.packet_type,
-            'Traffic Type': network_log.traffic_type,
-            'Malware Indicators': type(self).label_malware_indicators(network_log.ioc_detected),
-            'Anomaly Scores': self.z_anomaly_scores(network_log.anomaly_scores),
-            'Alerts/Warnings': type(self).label_alerts_warnings(network_log),
-            'Attack Signature': network_log.attack_signature,
-            'Action Taken': network_log.action_taken,
-            'Severity Level': self.ord_severity_level(network_log.severity_level),
-            'Network Segment':  network_log.severity_level,
-            'Firewall Logs': type(self).label_firewall_logs(network_log.firewall_log),
-            'IDS/IPS Alerts': type(self).label_ids_ips_alerts(network_log.ids_ips_alerts),
-            'Log Source': network_log.log_source,
-            'Source IP Class': self.get_ip_class(network_log.source_ip),
-            'Destination IP Class': self.get_ip_class(network_log.destination_ip),
-            'OS': network_log.operating_system,
-            'Browser': network_log.browser,
-            'Device': network_log.device,
-            'Source Port Category': self.categorize_port(network_log.source_port),
-            'Destination Port Category': self.categorize_port(network_log.destination_port),
+        month = nt_log.attack_date.month
+        year = nt_log.attack_date.year
+        hour = nt_log.attack_time.hour
+        day_of_week = nt_log.attack_date.weekday()
+
+        raw_features = {
+            'Protocol': nt_log.protocol,
+            'Packet Length': self.z_packet_length(nt_log.packet_length),
+            'Packet Type': nt_log.packet_type,
+            'Traffic Type': nt_log.traffic_type,
+            'Malware Indicators': type(self).label_malware_indicators(nt_log.ioc_detected),
+            'Anomaly Scores': self.z_anomaly_scores(nt_log.anomaly_scores),
+            'Alerts/Warnings': type(self).label_alerts_warnings(nt_log.alerts_warnings),
+            'Attack Signature': nt_log.attack_signature,
+            'Action Taken': nt_log.action_taken,
+            'Severity Level': self.ord_severity_level(nt_log.severity_level),
+            'Network Segment':  nt_log.network_segment,
+            'Firewall Logs': type(self).label_firewall_logs(nt_log.firewall_log),
+            'IDS/IPS Alerts': type(self).label_ids_ips_alerts(nt_log.ids_ips_alerts),
+            'Log Source': nt_log.log_source,
+            'Source IP Class': self.get_ip_class(nt_log.source_ip),
+            'Destination IP Class': self.get_ip_class(nt_log.destination_ip),
+            'OS': nt_log.operating_system,
+            'Browser': nt_log.browser,
+            'Device': nt_log.device,
+            'Source Port Category': self.categorize_port(nt_log.source_port),
+            'Destination Port Category': self.categorize_port(nt_log.destination_port),
             'Year': year,
             'Month': month,
             'Hour': hour,
             'DayOfWeek': day_of_week,
-            'Packet Length Category': self.categorize_packet_length(network_log.packet_length),
-            'Is Proxy Used': self.label_proxy_info(network_log.proxy_information)
+            'Packet Length Category': self.categorize_packet_length(nt_log.packet_length),
+            'Is Proxy Used': self.label_proxy_info(nt_log.proxy_information)
         }
-        
-        test = {f"{k}_{v}" if isinstance(v, str) else k: 1 if isinstance(v, str) else v for k, v in data_dict.items()}
 
+        encoded_features = {f"{k}_{v}" if isinstance(v, str) else k: 1 if isinstance(
+            v, str) else v for k, v in raw_features.items()}
 
-        values = [test.get(f, None) for f in self.MODEL_FEATURE_NAMES_IN]
+        model_input_features = {f: encoded_features.get(
+            f, 0) for f in self.MODEL_FEATURE_NAMES_IN}
 
-        print(values)
+        df = pd.DataFrame([model_input_features])
 
+        return df
 
     def get_ip_class(self, ip_address):
         first_octet = int(ip_address.split('.')[0])
