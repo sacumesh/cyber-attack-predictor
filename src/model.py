@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from typing import Optional
 from enum import Enum
 from datetime import datetime
+import pandas as pd
 
 
 # Define an Enum for Attack Types
@@ -56,6 +57,53 @@ class LogSource(Enum):
     FIREWALL = "Firewall"
 
 
+class MalwareIndicators(Enum):
+    IOC_DETECTED = "IoC Detected"
+    NO_DETECTION = "No Detection"
+
+
+class FirewallLog(Enum):
+    LOG_DATA = "Log Data"
+    NO_LOG_DATA = "No Log Data"
+
+
+class AlertsWarnings(Enum):
+    NO_ALERT_TRIGGERED = "No Alert Triggered"
+    ALERT_TRIGGERED = "Alert Triggered"
+
+
+class IDS_IPS_Alerts(Enum):
+    NO_ALERT_DATA = "No Alert Data"
+    ALERT_DATA = "Alert Data"
+
+
+class Is_Proxy_Used(Enum):
+    YES = "Yes"
+    NO = "No"
+
+
+class Device(Enum):
+    PC = "PC"
+    MOBILE = "mobile"
+    TABLET = "tablet"
+
+
+class OperatingSystem(Enum):
+    WINDOWS = "Windows"
+    LINUX = "Linux"
+    MAC_OS = "Mac OS"
+    IOS = "iOS"
+    ANDROID = "Android"
+
+class Browser(Enum):
+    CHROME = "Chrome"
+    OPERA = "Opera"
+    INTERNET_EXPLORER = "IE"
+    FIREFOX = "Firefox"
+    SAFARI = "Safari"
+    MOBILE_SAFARI = "Mobile Safari"
+
+
 @dataclass(frozen=True)
 class NetworkLogEntry:
     # Date and Time Info
@@ -96,40 +144,157 @@ class NetworkLogEntry:
 
 
 class ABC(object):
-    __columns = {
-        "Hour",
-        "Month",
-        "Alert Count",
-        "Is Proxy Used_0",
-        "Is Proxy Used_1",
-        "Packet Length Category_Huge",
-        "Packet Length Category_Large",
-        "Packet Length Category_Medium",
-        "Packet Length Category_Small",
-        "Packet Length Category_Very Large",
-        "Network Segment_Segment A",
-        "Network Segment_Segment B",
-        "Network Segment_Segment C",
-        "Anomaly Scores",
-        "Action Taken",
+    ANOMALY_SCORES_MEAN = 50.113473
+    ANOMALY_SCORES_STD_DEV = 28.853598
+
+    PACKET_LENGTH_MEAN = 781.452725
+    PACKET_LENGTH_STD_DEV = 416.044192
+
+    SEVERITY_LEVEL_ORD_DICT = {
+        "Low": 0,
+        "Medium": 1,
+        "High": 2
     }
+
+    MODEL_FEATURE_NAMES_IN = ['Packet Length', 'Anomaly Scores', 'Year', 'Month', 'Hour',
+       'DayOfWeek', 'Packet Type_Data', 'Traffic Type_FTP',
+       'Traffic Type_HTTP', 'Malware Indicators_No Detection',
+       'Alerts/Warnings_No Alert Triggered',
+       'Attack Signature_Known Pattern B', 'Action Taken_Ignored',
+       'Action Taken_Logged', 'Network Segment_Segment B',
+       'Network Segment_Segment C', 'IDS/IPS Alerts_No Alert Data',
+       'Log Source_Server', 'Source IP Class_Class B',
+       'Source IP Class_Class C', 'Destination IP Class_Class B',
+       'Destination IP Class_Class C', 'OS_Linux', 'OS_Mac OS',
+       'OS_Windows', 'OS_iOS', 'Source Port Category_UserPorts',
+       'Device_mobile', 'Device_tablet']
 
     def __init__(self, network_log: NetworkLogEntry):
 
-        column_dict = {col: None for col in self.__columns}
+        month = network_log.attack_date.month
+        year = network_log.attack_date.year
+        hour = network_log.attack_time.hour
+        day_of_week = network_log.attack_date.weekday()
 
-        column_dict["Hour"] = network_log.attack_time.hour
-        column_dict["Month"] = network_log.attack_date.month
-        column_dict["Alert Count"] = 6
-        column_dict["Is Proxy Used_0"] = None
-        column_dict["Is Proxy Used_1"] = None
-        column_dict["Packet Length Category_Huge"] = None
-        column_dict["Packet Length Category_Large"] = None
-        column_dict["Packet Length Category_Medium"] = None
-        column_dict["Packet Length Category_Small"] = None
-        column_dict["Packet Length Category_Very Large"] = None
-        column_dict["Network Segment_Segment A"] = None
-        column_dict["Network Segment_Segment B"] = None
-        column_dict["Network Segment_Segment C"] = None
-        column_dict["Anomaly Scores"] = None
-        column_dict["Action Taken"] = None
+        data_dict = {
+            'Protocol': network_log.protocol,
+            'Packet Length': self.z_packet_length(network_log.packet_length),
+            'Packet Type': network_log.packet_type,
+            'Traffic Type': network_log.traffic_type,
+            'Malware Indicators': type(self).label_malware_indicators(network_log.ioc_detected),
+            'Anomaly Scores': self.z_anomaly_scores(network_log.anomaly_scores),
+            'Alerts/Warnings': type(self).label_alerts_warnings(network_log),
+            'Attack Signature': network_log.attack_signature,
+            'Action Taken': network_log.action_taken,
+            'Severity Level': self.ord_severity_level(network_log.severity_level),
+            'Network Segment':  network_log.severity_level,
+            'Firewall Logs': type(self).label_firewall_logs(network_log.firewall_log),
+            'IDS/IPS Alerts': type(self).label_ids_ips_alerts(network_log.ids_ips_alerts),
+            'Log Source': network_log.log_source,
+            'Source IP Class': self.get_ip_class(network_log.source_ip),
+            'Destination IP Class': self.get_ip_class(network_log.destination_ip),
+            'OS': network_log.operating_system,
+            'Browser': network_log.browser,
+            'Device': network_log.device,
+            'Source Port Category': self.categorize_port(network_log.source_port),
+            'Destination Port Category': self.categorize_port(network_log.destination_port),
+            'Year': year,
+            'Month': month,
+            'Hour': hour,
+            'DayOfWeek': day_of_week,
+            'Packet Length Category': self.categorize_packet_length(network_log.packet_length),
+            'Is Proxy Used': self.label_proxy_info(network_log.proxy_information)
+        }
+        
+        test = {f"{k}_{v}" if isinstance(v, str) else k: 1 if isinstance(v, str) else v for k, v in data_dict.items()}
+
+
+        values = [test.get(f, None) for f in self.MODEL_FEATURE_NAMES_IN]
+
+        print(values)
+
+
+    def get_ip_class(self, ip_address):
+        first_octet = int(ip_address.split('.')[0])
+
+        if 1 <= first_octet <= 126:
+            return "Class A"
+        elif 128 <= first_octet <= 191:
+            return "Class B"
+        elif 192 <= first_octet <= 223:
+            return "Class C"
+        elif 224 <= first_octet <= 239:
+            return "Class D"
+        elif 240 <= first_octet <= 255:
+            return "Class E"
+        else:
+            return "Invalid IP Address"
+
+    @classmethod
+    def categorize_port(cls, port: int):
+        if 0 <= port <= 1023:
+            return 'SystemPorts'
+        elif 1024 <= port <= 49151:
+            return 'UserPorts'
+        elif 49152 <= port <= 65535:
+            return 'Dynamic'
+        else:
+            return 'Unknow'
+
+    @classmethod
+    def categorize_packet_length(cls, value):
+        category = pd.cut([value],
+                          bins=[0, 64, 512, 1023, 1499, float('inf')],
+                          labels=['Small', 'Medium', 'Large', 'Very Large', 'Huge'])
+
+        return category[0]
+
+    @classmethod
+    def z_anomaly_scores(cls, value: float):
+
+        if cls.ANOMALY_SCORES_MEAN == 0:  # Avoid division by zero error
+            return 0  # or return a specific error value, depending on context
+        z_value = (value - cls.ANOMALY_SCORES_MEAN) / \
+            cls.ANOMALY_SCORES_STD_DEV
+        return z_value
+
+    @classmethod
+    def z_packet_length(cls, value: float):
+
+        if cls.PACKET_LENGTH_STD_DEV == 0:  # Avoid division by zero error
+            return 0  # or return a specific error value, depending on context
+        z_value = (value - cls.PACKET_LENGTH_MEAN) / cls.PACKET_LENGTH_STD_DEV
+        return z_value
+
+    @classmethod
+    def ord_severity_level(cls, value: str):
+        ord_value = cls.SEVERITY_LEVEL_ORD_DICT.get(value, None)
+        if ord_value is None:
+            raise ValueError()
+
+        return ord_value
+
+    @staticmethod
+    def label_proxy_info(value: str):
+        result = Is_Proxy_Used.YES if value else Is_Proxy_Used.NO
+        return result.value
+
+    @staticmethod
+    def label_malware_indicators(value):
+        result = MalwareIndicators.IOC_DETECTED if value else MalwareIndicators.NO_DETECTION
+        return result.value
+
+    @staticmethod
+    def label_alerts_warnings(value):
+        result = AlertsWarnings.ALERT_TRIGGERED if value else AlertsWarnings.NO_ALERT_TRIGGERED
+        return result.value
+
+    @staticmethod
+    def label_firewall_logs(value):
+        result = FirewallLog.LOG_DATA if value else FirewallLog.NO_LOG_DATA
+        return result.value
+
+    @staticmethod
+    def label_ids_ips_alerts(value):
+        result = IDS_IPS_Alerts.ALERT_DATA if value else IDS_IPS_Alerts.NO_ALERT_DATA
+        return result.value
