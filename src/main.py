@@ -106,7 +106,7 @@ def cyber_attack_dashboard():
         col9, col10 = st.columns(2)
         with col9:
             anomaly_scores = st.number_input(
-                "Anomaly Scores", min_value=100, max_value=100
+                "Anomaly Scores", min_value=0, max_value=100
             )
             attack_signature = st.selectbox(
                 "Attack Signature", [s.value for s in AttackSignature], index=0
