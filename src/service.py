@@ -21,7 +21,7 @@ def load_preiction_model():
 def is_valid_ip(ip: str):
     try:
         ipaddress.IPv4Address(ip)
-        first_octect = int(ipaddress.split(".")[0])
+        first_octect = int(ip.split(".")[0])
         if first_octect == 127:
             return False
 
