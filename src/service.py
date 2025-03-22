@@ -9,7 +9,7 @@ logger = logging.getLogger(__file__)
 
 
 def load_preiction_model():
-    model_path = config.ML_MODELS / "xg_cls.pkl"
+    model_path = config.ML_MODELS / "lg_cls.pk1"
     try:
         prediction_model = joblib.load(model_path)
         return prediction_model
