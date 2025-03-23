@@ -170,15 +170,11 @@ class NetworkFeatureExtractor(object):
     }
 
     MODEL_FEATURE_NAMES_IN = [
-        "Alerts/Warnings_No Alert Triggered",
-        "Source IP Class_Class B",
-        "Source IP Class_Class C",
-        "OS_Linux",
-        "OS_Mac OS",
-        "OS_Windows",
-        "OS_iOS",
+        "Packet Length",
+        "Log Source_Server",
         "Device_mobile",
         "Device_tablet",
+        "Destination Port Category_UserPorts",
         "Packet Length Category_Medium",
         "Packet Length Category_Large",
         "Packet Length Category_Very Large",
@@ -188,7 +184,7 @@ class NetworkFeatureExtractor(object):
         "Browser_Mobile Safari",
         "Browser_Opera",
         "Browser_Safari",
-        "Packet Type_Data",
+        "Alerts/Warnings_No Alert Triggered",
     ]
 
     def __init__(self, network_log: NetworkLogEntry):
