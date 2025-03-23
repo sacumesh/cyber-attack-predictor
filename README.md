@@ -30,9 +30,10 @@ streamlit run ./src/main.py
 ```
 
 ### Web Application Preview
-Below is an example image of the web application:
+Below is an example demos of the web application:
 [Watch the live demo](./assets/videos/web_app_demo.mp4)
-![Web App Preview 1](./assets/images/web_app_demo_1.png)
-![Web App Preview 2](./assets/images/web_app_demo_2.png)
+#### Web Application Screen shot
+![Web App Preview](./assets/images/web_app_demo_1.png)
+
 
 
