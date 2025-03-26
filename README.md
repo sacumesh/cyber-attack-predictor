@@ -9,7 +9,7 @@ Ensure you have Conda installed. The recommended version for this project is Con
 
 To create the environment, run:
 ```sh
-conda env create -f environment.yml
+conda env create --file="environment.yml"
 ```
 
 Conda will also install the required Python dependencies automatically.
