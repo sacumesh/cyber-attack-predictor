@@ -170,21 +170,21 @@ class NetworkFeatureExtractor(object):
     }
 
     MODEL_FEATURE_NAMES_IN = [
-        "Alerts/Warnings_No Alert Triggered",
+        "Packet Length",
+        "Log Source_Server",
+        "Device_mobile",
+        "Device_tablet",
+        "Destination Port Category_UserPorts",
+        "Packet Length Category_Medium",
+        "Packet Length Category_Large",
+        "Packet Length Category_Very Large",
+        "Packet Length Category_Huge",
         "Browser_Firefox",
         "Browser_IE",
         "Browser_Mobile Safari",
         "Browser_Opera",
         "Browser_Safari",
-        "Destination Port Category_UserPorts",
-        "Device_mobile",
-        "Device_tablet",
-        "Log Source_Server",
-        "Packet Length",
-        "Packet Length Category_Huge",
-        "Packet Length Category_Large",
-        "Packet Length Category_Medium",
-        "Packet Length Category_Very Large",
+        "Alerts/Warnings_No Alert Triggered",
     ]
 
     def __init__(self, network_log: NetworkLogEntry):
