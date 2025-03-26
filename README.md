@@ -1,6 +1,6 @@
 # Cyber-Attack Predictor
 
-Cyberattacks have become an omnipresent threat in today's digital landscape, thus new ways are exploited to minimize the risk of these attacks. As AI and Machine Learning (ML) technologies continue to evolve, researchers are investigating innovative approaches to counteract and reduce the impact of these attacks. In this, we are going to apply Machine Learning techniques over a synthetic dataset containing three different types of cyber-attacks: DDoS, Malware, and Intrusion, and develop a web application to predict the attack type.
+Cyberattacks have become an omnipresent threat in today's digital landscape, thus new ways are exploited to minimize the risk of these attacks. As AI and Machine Learning (ML) technologies continue to evolve, researchers are investigating innovative approaches to counteract and reduce the impact of these attacks. In this project, we are going to apply Machine Learning techniques over a synthetic dataset containing three different types of cyber-attacks: DDoS, Malware, and Intrusion, and develop a web application to predict the attack type.
 
 ## Setting up Environment
 
